@@ -2,8 +2,7 @@ import psycopg2, os, sys
 from ftfutils import *
 
 DEBUG = False
-COL_WIDTH=20
-FORMAT_STRING='{0: <' + str(COL_WIDTH) + '}'
+LENGTHS = []
 
 # dbclass.cs.pdx.edu
 
@@ -42,18 +41,29 @@ def main():
     session.close()
     if(DEBUG): log(Mode.DEBUG, "Closed session to database: " + str(session))
 
-    for col in cols:
-        print(FORMAT_STRING.format(col), end="")
+    for i, col in enumerate(cols):
+        longest = len(col)
+
+        for row in rows:
+            if(len(str(row[i])) > longest): longest = len(str(row[i]))
+        LENGTHS.append(longest + 1)
+
+    print("| ", end="")
+    for i, col in enumerate(cols):
+        print(str('{0: <' + str(LENGTHS[i]) + '}| ').format(col), end="")
     print("\n", end="")
 
-    for col in cols:
-        for i in range(0, COL_WIDTH): print("-", end="")
-    print("\n", end="")
+    for i, col in enumerate(cols):
+        print("+", end="")
+        for i in range(0, LENGTHS[i] + 1): print("-", end="")
+    print("+\n", end="")
 
     for row in rows:
-        for i in row:
-            print(FORMAT_STRING.format(i), end="")
+        print("| ", end="")
+        for i, element in enumerate(row):
+            print(str('{0: <' + str(LENGTHS[i]) + '}| ').format(str(element)), end="")
         print("\n", end="")
+    print("\n", end="")
 
     log(Mode.INFO, str(len(rows)) + " Results.")
 
